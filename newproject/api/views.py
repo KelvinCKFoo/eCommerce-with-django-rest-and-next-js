@@ -5,6 +5,16 @@ from .models import Product
 from .serializer import ProductSerializer
 
 @api_view(['GET'])
-def get_product(request):
-    return Response(ProductSerializer({'title': 'Product 1', 'description': 'Product 1 description',\
-                                        'price': 100}).data, status=status.HTTP_200_OK)
+def get_products(request):
+    users = Product.objects.all()
+    serializer = ProductSerializer(users, many=True)
+    return Response(serializer.data)
+
+
+@api_view(['POST'])
+def enter_product(request):
+    serializer = ProductSerializer(data=request.data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
