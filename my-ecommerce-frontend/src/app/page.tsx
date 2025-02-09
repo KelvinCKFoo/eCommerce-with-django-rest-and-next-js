@@ -1,5 +1,7 @@
-// Import React (optional in Server Components, but useful for JSX types).
+// app/page.tsx
+
 import React from 'react';
+import Link from 'next/link';
 
 // Define a TypeScript type for a Product.
 type Product = {
@@ -11,11 +13,10 @@ type Product = {
   image?: string | null; // The image field is optional.
 };
 
-// The HomePage component is a Server Component that fetches product data
-// at request time using Next.js's App Router.
+// This asynchronous function is a Server Component that fetches product data at request time.
 export default async function HomePage() {
-  // Fetch product data from the Django REST API.
-  // Using `cache: 'no-store'` ensures fresh data on every request.
+  // Fetch product data from your Django REST API.
+  // Using `cache: 'no-store'` ensures that fresh data is fetched on every request.
   const res = await fetch('http://127.0.0.1:8000/api/products/', {
     cache: 'no-store',
   });
@@ -28,15 +29,15 @@ export default async function HomePage() {
   // Parse the JSON response into an array of Product objects.
   const products: Product[] = await res.json();
 
-  // Return the JSX for the page.
+  // Return the JSX for the product list page.
   return (
     <main className="bg-gray-100 min-h-screen">
-      {/* Header Section: Mimicking eBay's header with logo and navigation */}
+      {/* Header Section */}
       <header className="bg-white shadow p-4">
         <div className="container mx-auto flex justify-between items-center">
-          {/* Logo or site name */}
+          {/* Site Logo/Name */}
           <h1 className="text-2xl font-bold text-blue-600">eBay Clone</h1>
-          {/* Simple navigation menu */}
+          {/* Navigation Menu */}
           <nav>
             <ul className="flex space-x-4">
               <li className="text-gray-700 hover:text-blue-600 cursor-pointer">Home</li>
@@ -55,25 +56,41 @@ export default async function HomePage() {
         <h2 className="text-xl font-semibold mb-6">Featured Products</h2>
         {/* Product Grid: Responsive grid using Tailwind CSS */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-        {products.map((product) => (
-  <div key={product.id} className="bg-white border rounded shadow hover:shadow-lg transition duration-200">
-    {product.image && (
-      <img
-        src={`http://127.0.0.1:8000${product.image}`}
-        alt={product.name}
-        className="w-full h-48 object-cover rounded-t"
-      />
-    )}
-    <div className="p-4">
-      <h3 className="text-lg font-bold text-gray-800">{product.name}</h3>
-      <p className="text-sm text-gray-600 mt-2 line-clamp-2">{product.description}</p>
-      <p className="mt-4 text-blue-600 font-semibold">${Number(product.price).toFixed(2)}</p>
-      <p className="text-xs text-gray-500 mt-1">Stock: {product.stock}</p>
-    </div>
-  </div>
-))}
-
-          
+          {products.map((product) => (
+            <div
+              key={product.id}
+              className="bg-white border rounded shadow hover:shadow-lg transition duration-200"
+            >
+              {/* Product Image */}
+              {product.image && (
+                <img
+                  src={`http://127.0.0.1:8000${product.image}`}
+                  alt={product.name}
+                  className="w-full h-48 object-cover rounded-t"
+                />
+              )}
+              <div className="p-4">
+                {/* Clickable product name that links to the product detail page */}
+                <h3 className="text-lg font-bold text-gray-800">
+                  <Link href={`/products/${product.id}`}>
+                    {product.name}
+                  </Link>
+                </h3>
+                {/* Product description */}
+                <p className="text-sm text-gray-600 mt-2 line-clamp-2">
+                  {product.description}
+                </p>
+                {/* Product price */}
+                <p className="mt-4 text-blue-600 font-semibold">
+                  ${Number(product.price).toFixed(2)}
+                </p>
+                {/* Product stock */}
+                <p className="text-xs text-gray-500 mt-1">
+                  Stock: {product.stock}
+                </p>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
 
