@@ -59,7 +59,7 @@ export default function LoginPage() {
       {message && <p className="mb-4 text-red-500">{message}</p>}
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <div>
-          <label className="block font-medium text-black">Username</label>
+          <label className="block font-medium text-white">Username</label>
           <input
             type="text"
             {...register('username', { required: 'Username is required' })}
@@ -70,7 +70,7 @@ export default function LoginPage() {
           )}
         </div>
         <div>
-          <label className="block font-medium text-black">Password</label>
+          <label className="block font-medium text-white">Password</label>
           <input
             type="password"
             {...register('password', { required: 'Password is required' })}
