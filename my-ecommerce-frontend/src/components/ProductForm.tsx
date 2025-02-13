@@ -19,17 +19,14 @@ export default function ProductForm({ productId }: { productId?: number }) {
     register,
     handleSubmit,
     setValue,
-    watch,
     reset,
     formState: { errors, isSubmitting },
   } = useForm<ProductFormData>();
 
   const [message, setMessage] = useState<string>('');
-  const [loading, setLoading] = useState<boolean>(false);
 
   useEffect(() => {
     if (productId) {
-      setLoading(true);
       fetch(`http://127.0.0.1:8000/api/products/${productId}/`)
         .then((res) => res.json())
         .then((data) => {
@@ -38,19 +35,17 @@ export default function ProductForm({ productId }: { productId?: number }) {
           setValue('price', data.price);
           setValue('stock', data.stock);
         })
-        .catch(() => setMessage('Failed to fetch product details'))
-        .finally(() => setLoading(false));
+        .catch(() => setMessage('Failed to fetch product details'));
     }
   }, [productId, setValue]);
 
   const onSubmit = async (data: ProductFormData) => {
-    setLoading(true);
     const formData = new FormData();
     formData.append('name', data.name);
     formData.append('description', data.description);
     formData.append('price', String(data.price));
     formData.append('stock', String(data.stock));
-    if (data.image && data.image[0]) {
+    if (data.image && data.image.length > 0) {
       formData.append('image', data.image[0]);
     }
 
@@ -72,10 +67,8 @@ export default function ProductForm({ productId }: { productId?: number }) {
       } else {
         setMessage('Failed to process request.');
       }
-    } catch (error) {
+    } catch (_) {
       setMessage('Network error.');
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -84,7 +77,6 @@ export default function ProductForm({ productId }: { productId?: number }) {
     const confirmed = confirm('Are you sure you want to delete this product?');
     if (!confirmed) return;
 
-    setLoading(true);
     try {
       const res = await fetch(`http://127.0.0.1:8000/api/products/${productId}/`, {
         method: 'DELETE',
@@ -97,17 +89,14 @@ export default function ProductForm({ productId }: { productId?: number }) {
       } else {
         setMessage('Failed to delete product.');
       }
-    } catch (error) {
+    } catch (_) {
       setMessage('Network error while deleting.');
-    } finally {
-      setLoading(false);
     }
   };
 
   return (
     <div className="max-w-lg mx-auto bg-gray-900 text-white shadow-lg rounded-lg p-6">
-      {message && <p className="text-green-400 mb-4">{message}</p>}
-      {loading && <p className="text-yellow-400 mb-4">Processing...</p>}
+      {message && <p className="text-green-400 mb-4" aria-live="polite">{message}</p>}
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <div>
@@ -166,10 +155,7 @@ export default function ProductForm({ productId }: { productId?: number }) {
           <button
             type="button"
             onClick={handleDelete}
-            className={`bg-red-500 text-white p-2 rounded w-full mt-2 ${
-              loading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-red-600'
-            }`}
-            disabled={loading}
+            className="bg-red-500 text-white p-2 rounded w-full mt-2 hover:bg-red-600"
           >
             Delete Product
           </button>

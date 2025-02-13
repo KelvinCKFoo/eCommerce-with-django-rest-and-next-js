@@ -32,11 +32,10 @@ export default function ManageProductsPage() {
         }
         const data: Product[] = await res.json();
         setProducts(data);
-      } catch (error) {
+      } catch (_) {
         setMessage('Error fetching products');
-        if (process.env.NODE_ENV === 'development') {
-          console.error(error);
-        }
+        
+        
       }
     };
     fetchProducts();

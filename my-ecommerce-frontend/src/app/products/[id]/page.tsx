@@ -33,7 +33,7 @@ export default async function ProductDetailPage({
 
   try {
     product = await fetchProduct(params.id);
-  } catch (error) {
+  } catch (_) {
     notFound();
   }
 
