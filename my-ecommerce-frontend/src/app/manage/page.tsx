@@ -17,6 +17,7 @@ export default function ManageProductsPage() {
   const router = useRouter();
   const [products, setProducts] = useState<Product[]>([]);
   const [message, setMessage] = useState<string>('');
+  const [deleteProductId, setDeleteProductId] = useState<number | null>(null);
 
   // Fetch products on mount.
   useEffect(() => {
@@ -33,33 +34,37 @@ export default function ManageProductsPage() {
         setProducts(data);
       } catch (error) {
         setMessage('Error fetching products');
-        console.error(error);
+        if (process.env.NODE_ENV === 'development') {
+          console.error(error);
+        }
       }
     };
     fetchProducts();
   }, []);
 
   // Delete a product with confirmation and update the list.
-  const handleDelete = async (id: number) => {
-    const confirmed = window.confirm('Are you sure you want to delete this product?');
-    if (!confirmed) return;
+  const handleDelete = async () => {
+    if (!deleteProductId) return;
 
     try {
-      const res = await fetch(`http://localhost:8000/api/products/${id}/`, {
+      const res = await fetch(`http://localhost:8000/api/products/${deleteProductId}/`, {
         method: 'DELETE',
         credentials: 'include',
       });
       if (res.ok) {
-        setProducts(products.filter((product) => product.id !== id));
+        setProducts(products.filter((product) => product.id !== deleteProductId));
+        setMessage('Product deleted successfully!');
       } else {
         setMessage('Error deleting product');
       }
     } catch (error) {
       setMessage('Network error while deleting');
+    } finally {
+      setDeleteProductId(null); // Close modal after deletion
     }
   };
 
-  // Logout function: simply redirect to the logout page.
+  // Logout function: redirect to the logout page.
   const handleLogout = () => {
     router.push('/logout');
   };
@@ -93,7 +98,7 @@ export default function ManageProductsPage() {
         {products.map((product) => (
           <li
             key={product.id}
-            className="bg-gray-800 bg-opacity-90 rounded-lg p-6 shadow-xl flex justify-between items-center transform hover:scale-[1.02] transition duration-200"
+            className="bg-gray-800 bg-opacity-90 rounded-lg p-6 shadow-xl flex justify-between items-center transform hover:scale-[1.01] transition duration-200"
           >
             <div>
               <h3 className="text-2xl font-bold text-white">{product.name}</h3>
@@ -111,7 +116,7 @@ export default function ManageProductsPage() {
                 Edit
               </Link>
               <button
-                onClick={() => handleDelete(product.id)}
+                onClick={() => setDeleteProductId(product.id)}
                 className="bg-red-600 text-white px-4 py-2 rounded shadow hover:bg-red-700 transition duration-200"
               >
                 Delete
@@ -120,6 +125,30 @@ export default function ManageProductsPage() {
           </li>
         ))}
       </ul>
+
+      {/* Modal for Delete Confirmation */}
+      {deleteProductId && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-60">
+          <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
+            <h2 className="text-lg font-bold text-white">Confirm Deletion</h2>
+            <p className="text-gray-300 mt-2">Are you sure you want to delete this product?</p>
+            <div className="flex justify-end mt-4 space-x-4">
+              <button
+                onClick={() => setDeleteProductId(null)}
+                className="bg-gray-600 text-white px-4 py-2 rounded shadow hover:bg-gray-700 transition duration-200"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDelete}
+                className="bg-red-600 text-white px-4 py-2 rounded shadow hover:bg-red-700 transition duration-200"
+              >
+                Confirm
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
