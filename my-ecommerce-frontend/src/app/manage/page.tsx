@@ -42,9 +42,7 @@ export default function ManageProductsPage() {
   // Delete a product with confirmation and update the list.
   const handleDelete = async (id: number) => {
     const confirmed = window.confirm('Are you sure you want to delete this product?');
-    if (!confirmed) {
-      return; // Cancel deletion if user does not confirm.
-    }
+    if (!confirmed) return;
 
     try {
       const res = await fetch(`http://localhost:8000/api/products/${id}/`, {
@@ -62,55 +60,59 @@ export default function ManageProductsPage() {
   };
 
   // Logout function: simply redirect to the logout page.
-  const handleLogout = async () => {
+  const handleLogout = () => {
     router.push('/logout');
   };
 
   return (
-    <div className="p-4">
-      <header className="flex justify-between items-center mb-4">
-        <h1 className="text-2xl font-bold">Manage Products</h1>
+    <div className="p-6 bg-gray-900 min-h-screen">
+      <header className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-extrabold text-white drop-shadow-lg">
+          Manage Products
+        </h1>
         <button
           onClick={handleLogout}
-          className="bg-red-500 text-white px-4 py-2 rounded"
+          className="bg-gray-800 text-red-400 px-6 py-2 rounded-full shadow-lg hover:bg-gray-700 transition duration-200"
         >
           Logout
         </button>
       </header>
 
-      {message && <p className="mb-4 text-red-500">{message}</p>}
+      {message && <p className="mb-4 text-yellow-200 font-semibold">{message}</p>}
 
-      <div className="mb-4">
+      <div className="mb-6">
         <Link
           href="/create"
-          className="bg-green-500 text-white px-4 py-2 rounded inline-block"
+          className="bg-gray-800 text-green-400 px-6 py-2 rounded-full shadow-lg hover:bg-gray-700 transition duration-200 inline-block"
         >
           Create New Product
         </Link>
       </div>
 
-      <ul className="space-y-4">
+      <ul className="space-y-6">
         {products.map((product) => (
           <li
             key={product.id}
-            className="border p-4 flex justify-between items-center"
+            className="bg-gray-800 bg-opacity-90 rounded-lg p-6 shadow-xl flex justify-between items-center transform hover:scale-[1.02] transition duration-200"
           >
             <div>
-              <h3 className="text-xl font-semibold">{product.name}</h3>
-              <p>{product.description}</p>
-              <p>${Number(product.price).toFixed(2)}</p>
-              <p>Stock: {product.stock}</p>
+              <h3 className="text-2xl font-bold text-white">{product.name}</h3>
+              <p className="text-gray-300 mt-2">{product.description}</p>
+              <p className="text-lg font-medium text-indigo-300 mt-2">
+                ${Number(product.price).toFixed(2)}
+              </p>
+              <p className="text-sm text-gray-400 mt-1">Stock: {product.stock}</p>
             </div>
-            <div className="flex space-x-2">
+            <div className="flex flex-col space-y-2">
               <Link
                 href={`/manage/${product.id}`}
-                className="bg-blue-500 text-white px-3 py-1 rounded"
+                className="bg-blue-600 text-white px-4 py-2 rounded shadow hover:bg-blue-700 transition duration-200"
               >
                 Edit
               </Link>
               <button
                 onClick={() => handleDelete(product.id)}
-                className="bg-red-500 text-white px-3 py-1 rounded"
+                className="bg-red-600 text-white px-4 py-2 rounded shadow hover:bg-red-700 transition duration-200"
               >
                 Delete
               </button>

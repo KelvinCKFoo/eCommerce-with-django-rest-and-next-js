@@ -21,13 +21,15 @@ export default function ProductForm({ productId }: { productId?: number }) {
     setValue,
     watch,
     reset,
-    formState: { errors },
+    formState: { errors, isSubmitting },
   } = useForm<ProductFormData>();
 
   const [message, setMessage] = useState<string>('');
+  const [loading, setLoading] = useState<boolean>(false);
 
   useEffect(() => {
     if (productId) {
+      setLoading(true);
       fetch(`http://127.0.0.1:8000/api/products/${productId}/`)
         .then((res) => res.json())
         .then((data) => {
@@ -36,11 +38,13 @@ export default function ProductForm({ productId }: { productId?: number }) {
           setValue('price', data.price);
           setValue('stock', data.stock);
         })
-        .catch(() => setMessage('Failed to fetch product details'));
+        .catch(() => setMessage('Failed to fetch product details'))
+        .finally(() => setLoading(false));
     }
   }, [productId, setValue]);
 
   const onSubmit = async (data: ProductFormData) => {
+    setLoading(true);
     const formData = new FormData();
     formData.append('name', data.name);
     formData.append('description', data.description);
@@ -52,8 +56,8 @@ export default function ProductForm({ productId }: { productId?: number }) {
 
     const method = productId ? 'PUT' : 'POST';
     const url = productId
-    ? `http://127.0.0.1:8000/api/products/${productId}/`
-    : `http://127.0.0.1:8000/api/products/enter/`;
+      ? `http://127.0.0.1:8000/api/products/${productId}/`
+      : `http://127.0.0.1:8000/api/products/enter/`;
 
     try {
       const res = await fetch(url, {
@@ -70,82 +74,102 @@ export default function ProductForm({ productId }: { productId?: number }) {
       }
     } catch (error) {
       setMessage('Network error.');
+    } finally {
+      setLoading(false);
     }
   };
-  
-  const handleDelete = async () => {const confirmed = window.confirm('Are you sure you want to delete this product?');
-  if (!confirmed) {
-    return; // Cancel deletion if user does not confirm.
-  }
-    if (!productId) return;
-    const res = await fetch(`http://127.0.0.1:8000/api/products/${productId}/`, {
-      method: 'DELETE',
-    });
 
-    if (res.ok) {
-      reset();
-      setMessage('Product deleted successfully!');
-      router.push('/manage');
-    } else {
-      setMessage('Failed to delete product.');
+  const handleDelete = async () => {
+    if (!productId) return;
+    const confirmed = confirm('Are you sure you want to delete this product?');
+    if (!confirmed) return;
+
+    setLoading(true);
+    try {
+      const res = await fetch(`http://127.0.0.1:8000/api/products/${productId}/`, {
+        method: 'DELETE',
+      });
+
+      if (res.ok) {
+        reset();
+        setMessage('Product deleted successfully!');
+        router.push('/manage');
+      } else {
+        setMessage('Failed to delete product.');
+      }
+    } catch (error) {
+      setMessage('Network error while deleting.');
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="max-w-lg mx-auto bg-white shadow-md rounded-lg p-6">
-      {message && <p className="text-green-600">{message}</p>}
+    <div className="max-w-lg mx-auto bg-gray-900 text-white shadow-lg rounded-lg p-6">
+      {message && <p className="text-green-400 mb-4">{message}</p>}
+      {loading && <p className="text-yellow-400 mb-4">Processing...</p>}
+
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <div>
-          <label className="block font-medium text-black">Name</label>
+          <label className="block font-medium text-gray-300">Name</label>
           <input
             {...register('name', { required: 'Product name is required' })}
-            className="border p-2 w-full text-black bg-white"
+            className="border p-2 w-full text-black bg-gray-100"
           />
-          {errors.name && <p className="text-red-500">{errors.name.message}</p>}
+          {errors.name && <p className="text-red-400">{errors.name.message}</p>}
         </div>
         <div>
-          <label className="block font-medium text-black">Description</label>
+          <label className="block font-medium text-gray-300">Description</label>
           <textarea
             {...register('description', { required: 'Description is required' })}
-            className="border p-2 w-full text-black bg-white"
+            className="border p-2 w-full text-black bg-gray-100"
           />
-          {errors.description && <p className="text-red-500">{errors.description.message}</p>}
+          {errors.description && <p className="text-red-400">{errors.description.message}</p>}
         </div>
         <div>
-          <label className="block font-medium text-black">Price</label>
+          <label className="block font-medium text-gray-300">Price</label>
           <input
             type="number"
             step="0.01"
             {...register('price', { required: 'Price is required' })}
-            className="border p-2 w-full text-black bg-white"
+            className="border p-2 w-full text-black bg-gray-100"
           />
-          {errors.price && <p className="text-red-500">{errors.price.message}</p>}
+          {errors.price && <p className="text-red-400">{errors.price.message}</p>}
         </div>
         <div>
-          <label className="block font-medium text-black">Stock</label>
+          <label className="block font-medium text-gray-300">Stock</label>
           <input
             type="number"
             {...register('stock', { required: 'Stock is required' })}
-            className="border p-2 w-full text-black bg-white"
+            className="border p-2 w-full text-black bg-gray-100"
           />
-          {errors.stock && <p className="text-red-500">{errors.stock.message}</p>}
+          {errors.stock && <p className="text-red-400">{errors.stock.message}</p>}
         </div>
         <div>
-          <label className="block font-medium text-black">Image</label>
+          <label className="block font-medium text-gray-300">Image</label>
           <input
             type="file"
             {...register('image')}
-            className="border p-2 w-full text-black bg-white"
+            className="border p-2 w-full text-gray-400 bg-gray-100"
           />
         </div>
-        <button type="submit" className="bg-blue-500 text-white p-2 rounded w-full">
+        <button
+          type="submit"
+          className={`bg-blue-500 text-white p-2 rounded w-full ${
+            isSubmitting ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-600'
+          }`}
+          disabled={isSubmitting}
+        >
           {productId ? 'Update Product' : 'Create Product'}
         </button>
         {productId && (
           <button
             type="button"
             onClick={handleDelete}
-            className="bg-red-500 text-white p-2 rounded w-full mt-2"
+            className={`bg-red-500 text-white p-2 rounded w-full mt-2 ${
+              loading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-red-600'
+            }`}
+            disabled={loading}
           >
             Delete Product
           </button>
