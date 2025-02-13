@@ -1,15 +1,20 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
-function getCSRFToken() {
-  const match = document.cookie.match(new RegExp('(^| )csrftoken=([^;]+)'));
-  return match ? match[2] : null;
-}
+// Function to get CSRF token from cookies
+const getCSRFToken = () => {
+  if (typeof document !== 'undefined') {
+    const match = document.cookie.match(new RegExp('(^| )csrftoken=([^;]+)'));
+    return match ? match[2] : null;
+  }
+  return null;
+};
 
 export default function LogoutPage() {
   const router = useRouter();
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const logout = async () => {
@@ -23,7 +28,7 @@ export default function LogoutPage() {
           },
           credentials: 'include',
         });
-        console.log('Logout response status:', res.status);
+
         if (res.ok) {
           console.log('Logout successful, redirecting to /login');
           router.push('/login');
@@ -31,8 +36,10 @@ export default function LogoutPage() {
           const errText = await res.text();
           console.error('Logout failed:', errText);
         }
-      } catch (error: any) {
-        console.error('Network error during logout:', error);
+      } catch (error) {
+        console.error('Network error during logout:', (error as Error).message);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -40,8 +47,11 @@ export default function LogoutPage() {
   }, [router]);
 
   return (
-    <div className="container mx-auto p-4">
-      <p>Logging out...</p>
+    <div className="flex items-center justify-center h-screen bg-gray-900 text-white">
+      <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
+        <h2 className="text-2xl font-bold mb-4">Logging out...</h2>
+        {loading && <p className="text-gray-300">Please wait...</p>}
+      </div>
     </div>
   );
 }
