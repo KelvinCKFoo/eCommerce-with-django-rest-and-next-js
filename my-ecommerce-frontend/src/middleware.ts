@@ -1,28 +1,26 @@
-// middleware.ts
-
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-// This middleware will run for all routes starting with /manage.
-export function middleware(req: NextRequest) {
-  // Check if the request URL starts with /manage.
-  if (req.nextUrl.pathname.startsWith('/manage')) {
-    // Check if a specific authentication cookie exists.
-    const authToken = req.cookies.get('authToken');
-
-    // If the auth token is missing or invalid, redirect to the login page.
+// This middleware protects routes under /manage and /create.
+export function middleware(request: NextRequest) {
+  // Check if the request URL path starts with /manage or /create.
+  if (
+    request.nextUrl.pathname.startsWith('/manage') ||
+    request.nextUrl.pathname.startsWith('/create')
+  ) {
+    // Get the auth token from cookies (adjust the cookie name as needed).
+    const authToken = request.cookies.get('authToken');
+    console.log('Middleware: checking route', request.nextUrl.pathname, 'authToken:', authToken);
     if (!authToken) {
-      const loginUrl = new URL('/login', req.url);
-      // Optionally, add a redirect back parameter.
-      loginUrl.searchParams.set('from', req.nextUrl.pathname);
+      const loginUrl = new URL('/login', request.url);
+      loginUrl.searchParams.set('from', request.nextUrl.pathname);
+      console.log('Middleware: redirecting to', loginUrl.toString());
       return NextResponse.redirect(loginUrl);
     }
   }
-  // If everything is fine, allow the request to continue.
   return NextResponse.next();
 }
 
-// Specify that this middleware applies to routes under /manage.
 export const config = {
-  matcher: '/manage/:path*',
+  matcher: ['/manage/:path*', '/create/:path*'],
 };
