@@ -54,7 +54,7 @@ export default async function HomePage() {
           {products.map((product) => (
             // Wrap the entire product card in a Link for full-card clickability.
             <Link key={product.id} href={`/products/${product.id}`} className="block">
-              <div className="bg-white border rounded shadow hover:shadow-lg transition duration-200">
+              <div className="bg-white border rounded shadow hover:shadow-lg transition duration-200 w-full">
                 {product.image && (
                   // Container with fixed height and centered content for consistent image sizing.
                   <div className="w-full h-48 flex items-center justify-center">

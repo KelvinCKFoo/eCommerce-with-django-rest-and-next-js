@@ -3,6 +3,10 @@ from rest_framework.response import Response
 from rest_framework import status
 from .models import Product
 from .serializer import ProductSerializer
+from django.contrib.auth import authenticate, login
+from django.http import JsonResponse
+from django.contrib.auth import logout
+from django.views.decorators.csrf import csrf_exempt
 
 @api_view(['GET'])
 def get_products(request):
@@ -37,3 +41,51 @@ def product_detail(request,pk):
     elif request.method == 'DELETE':
         product.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+
+
+@csrf_exempt
+@api_view(['POST'])
+def login_view(request):
+    username = request.data.get('username')
+    password = request.data.get('password')
+    user = authenticate(request, username=username, password=password)
+    
+    if user is not None:
+        if user.is_staff:
+            login(request, user)
+            response = JsonResponse({'is_staff': True, 'message': 'Login successful'})
+            # Use 'localhost' consistently; secure is False for HTTP development.
+            response.set_cookie(
+                'authToken',
+                'test_staff_token',  # Replace with your token generation logic
+                path='/',
+                httponly=True,
+                
+                secure=False  # Must be False if not using HTTPS
+            )
+            return response
+        else:
+            return JsonResponse(
+                {'is_staff': False, 'message': 'Access denied: not a staff member'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+    else:
+        return JsonResponse({'error': 'Invalid credentials'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+
+
+
+@csrf_exempt
+@api_view(['POST'])
+def logout_view(request):
+    print("Logout view called, method:", request.method)  # Debug log
+    logout(request)
+    response = JsonResponse({'message': 'Logout successful'}, status=status.HTTP_200_OK)
+    # Delete the authToken cookie; adjust parameters if necessary.
+    response.delete_cookie('authToken', path='/')
+    print("Cookie deletion attempted")  # Debug log
+    return response
