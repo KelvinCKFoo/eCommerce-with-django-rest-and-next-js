@@ -72,8 +72,11 @@ export default function ProductForm({ productId }: { productId?: number }) {
       setMessage('Network error.');
     }
   };
-
-  const handleDelete = async () => {
+  
+  const handleDelete = async () => {const confirmed = window.confirm('Are you sure you want to delete this product?');
+  if (!confirmed) {
+    return; // Cancel deletion if user does not confirm.
+  }
     if (!productId) return;
     const res = await fetch(`http://127.0.0.1:8000/api/products/${productId}/`, {
       method: 'DELETE',

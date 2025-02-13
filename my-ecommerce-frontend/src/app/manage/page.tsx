@@ -39,8 +39,13 @@ export default function ManageProductsPage() {
     fetchProducts();
   }, []);
 
-  // Delete a product and update the list.
+  // Delete a product with confirmation and update the list.
   const handleDelete = async (id: number) => {
+    const confirmed = window.confirm('Are you sure you want to delete this product?');
+    if (!confirmed) {
+      return; // Cancel deletion if user does not confirm.
+    }
+
     try {
       const res = await fetch(`http://localhost:8000/api/products/${id}/`, {
         method: 'DELETE',
@@ -57,7 +62,7 @@ export default function ManageProductsPage() {
   };
 
   // Logout function: simply redirect to the logout page.
-  const handleLogout = () => {
+  const handleLogout = async () => {
     router.push('/logout');
   };
 
